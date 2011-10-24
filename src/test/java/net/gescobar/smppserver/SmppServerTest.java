@@ -5,12 +5,17 @@ import ie.omk.smpp.message.SMPPPacket;
 import java.net.Socket;
 import java.util.Date;
 
+import ie.omk.smpp.message.SMPPResponse;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
  * 
  * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
  */
 public class SmppServerTest {
 	
@@ -27,7 +32,7 @@ public class SmppServerTest {
 		PacketProcessor packetProcessor = new PacketProcessor() {
 
 			@Override
-			public Response processPacket(SMPPPacket packet) {
+			public Response processPacket(SMPPPacket packet, SMPPResponse response, SmppSession.SendResponseAction sendResponseBackAction) {
 				return Response.OK;
 			}
 			

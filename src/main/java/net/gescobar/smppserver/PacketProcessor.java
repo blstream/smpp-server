@@ -1,17 +1,22 @@
 package net.gescobar.smppserver;
 
 import ie.omk.smpp.message.SMPPPacket;
+import ie.omk.smpp.message.SMPPResponse;
 
 /**
  * This interface is implemented by those who want to process incoming SMPP packets received in a 
  * {@link SmppSession}.
  * 
  * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
  */
 public interface PacketProcessor {
 	
 	/**
-	 * The possible values that can be returned in the {@link PacketProcessor#processPacket(SMPPPacket)} method.
+	 * The possible values that can be returned in the {@link PacketProcessor#processPacket(ie.omk.smpp.message.SMPPPacket, ie.omk.smpp.message.SMPPResponse, net.gescobar.smppserver.SmppSession.SendResponseAction)} method.
 	 * Actually, they correspond to the values defined in the command status of the SMPP specification.
 	 * 
 	 * Additionally, this enum holds a messageId that can be set when returning a sumbit_sm response. If not set
@@ -67,7 +72,8 @@ public interface PacketProcessor {
 		INVALID_PARAMETER_LENGTH(0xc2),
 		MISSING_EXPECTED_PARAMETER(0xc3),
 		INVALID_PARAMETER_VALUE(0xc4),
-		DELIVERY_FAILED(0xfe);
+		DELIVERY_FAILED(0xfe),
+        ASYNC_RESPONSE(0xff);
 
 		private int commandStatus;
 		
@@ -100,10 +106,13 @@ public interface PacketProcessor {
 	/**
 	 * Process an SMPP Packet and returns a code that will be used as the command status for the response.
 	 * 
-	 * @param packet the SMPPPacket to be processed.
-	 * @return a Response with the command status that will be returned to the client and optionally a messageId
+	 *
+     * @param packet the SMPPPacket to be processed.
+     * @param response that will be sent back to ESME. You can set attributes here (i.e. TLVs)
+     * @param sendResponseBackAction
+     * @return a Response with the command status that will be returned to the client and optionally a messageId
 	 * (if it is a submit_sm response).
 	 */
-	Response processPacket(SMPPPacket packet);
+	Response processPacket(SMPPPacket packet, SMPPResponse response, SmppSession.SendResponseAction sendResponseBackAction);
 	
 }

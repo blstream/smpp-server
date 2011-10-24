@@ -13,6 +13,7 @@ import ie.omk.smpp.util.SMPPIO;
 import ie.omk.smpp.util.SequenceNumberScheme;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.gescobar.smppserver.PacketProcessor.Response;
 import net.gescobar.smppserver.util.PacketFactory;
@@ -22,14 +23,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>Represents an SMPP session with an SMPP client. When it receives an SMPP packet, it calls the 
- * {@link PacketProcessor#processPacket(SMPPPacket)} and responds with the returned value.</p>
+ * {@link PacketProcessor#processPacket(ie.omk.smpp.message.SMPPPacket, ie.omk.smpp.message.SMPPResponse, net.gescobar.smppserver.SmppSession.SendResponseAction)} and responds with the returned value.</p>
  * 
  * <p>You can also send SMPP packets to the client using the ... </p>
  * 
  * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
  */
 public class SmppSession {
 	
+    public interface SendResponseAction {
+        void sendResponseBackToESME(Response response) throws IOException;
+    }
+
 	private Logger log = LoggerFactory.getLogger(SmppSession.class);
 	
 	/**
@@ -78,7 +87,7 @@ public class SmppSession {
 	/**
 	 * The status of the session.
 	 */
-	private Status status = Status.IDLE;
+	private volatile Status status = Status.IDLE;
 	
 	/**
 	 * The bind type of the session. Null if not bound.
@@ -115,7 +124,7 @@ public class SmppSession {
 		this(link, new PacketProcessor() {
 
 			@Override
-			public Response processPacket(SMPPPacket packet) {
+			public Response processPacket(SMPPPacket packet, SMPPResponse response, SendResponseAction sendResponseBackAction) {
 				return Response.OK;
 			}
 			
@@ -273,6 +282,8 @@ public class SmppSession {
     	 */
     	private PacketFactory packetFactory = new PacketFactory();
 
+        volatile AtomicInteger ioExceptions = new AtomicInteger(0);
+
 		@Override
 		public void run() {
 			
@@ -287,13 +298,12 @@ public class SmppSession {
 		}
 		
 		/**
-		 * Helper method that will read the incoming packets. 
-		 * 
-		 * @throws IOException if there is a problem receiving the packets. 
+		 * Helper method that will read the incoming packets.
+		 *
+		 * @throws IOException if there is a problem receiving the packets.
 		 */
 		private void receiveAndProcessPackets() throws IOException {
 	       
-			int ioExceptions = 0;
 	        final int ioExceptionLimit = APIConfig.getInstance().getInt(APIConfig.TOO_MANY_IO_EXCEPTIONS, 5);
 	        
 	        // read packets while the connection is opened
@@ -309,13 +319,11 @@ public class SmppSession {
 	                // process it
 	                processPacket(packet);
 	                
-	                ioExceptions = 0;
 	                
 	            } catch (IOException x) {
 	            	
 	            	// increase the exceptions and check if we have exceeded the limit
-	                ioExceptions++;
-	                if (ioExceptions >= ioExceptionLimit) {
+                    if (ioExceptions.incrementAndGet() >= ioExceptionLimit) {
 	                    throw x;
 	                }
 	                
@@ -356,32 +364,60 @@ public class SmppSession {
 	     * @param packet the packet to the processed.
 	     * @throws IOException if there is a problem writing the response
 	     */
-	    private void processPacket(SMPPPacket packet) throws IOException {
+	    private void processPacket(final SMPPPacket packet) throws IOException {
 	   	 	log.debug("received packet: " + packet);
 	   	 
 	   	 	if (packet.isRequest()) {
 	   		 
-	   	 		// call the handler
-	   	 		Response responseStatus = null;
-	   	 		try {
-	   	 			responseStatus = packetProcessor.processPacket(packet);
-	   	 			log.debug("packet processor returned: " + responseStatus);
-	   	 		} catch (Exception e) {
-	   	 			log.error("Exception calling the packet processor: " + e.getMessage(), e);
-	   	 			responseStatus = Response.SYSTEM_ERROR;
-	   	 		}
-	   	 		
 	   	 		// create the response
-	   	 		SMPPResponse response = null;
+	   	 		final SMPPResponse response;
 	   	 		try {
 	   	 			response = (SMPPResponse) packetFactory.newResponse(packet);
 	   	 		} catch (BadCommandIDException e) {
 	   	 			throw new SMPPProtocolException("Unrecognised command received", e);
 	   	 		}
 	   	 		
-	   	 		// set the command status
-	   	 		response.setCommandStatus(responseStatus.getCommandStatus());
+                final SendResponseAction justSendResponse = new SendResponseAction() {
+                    @Override
+                    public void sendResponseBackToESME(Response responseStatus) throws IOException {
+                        // set the command status
+                        response.setCommandStatus(responseStatus.getCommandStatus());
+                        properlyAdjustBindStatus(packet, response, responseStatus);
+                        // send the response
+                        link.write(response, true);
+                        ioExceptions.set(0);
+                    }
+                };
+                final SendResponseAction sendResponseAndCountFailures = new SendResponseAction() {
+                    @Override
+                    public void sendResponseBackToESME(Response responseStatus) throws IOException {
+                        try {
+                            justSendResponse.sendResponseBackToESME(responseStatus);
+                        } catch (IOException e) {
+                            ioExceptions.incrementAndGet();
+                            throw e;
+                        }
+                    }
+                };
 	   		 
+	   	 		// call the handler
+	   	 		Response responseStatus = null;
+	   	 		try {
+	   	 			responseStatus = packetProcessor.processPacket(packet, response, sendResponseAndCountFailures);
+	   	 			log.debug("packet processor returned: " + responseStatus);
+	   	 		} catch (Exception e) {
+	   	 			log.error("Exception calling the packet processor: " + e.getMessage(), e);
+	   	 			responseStatus = Response.SYSTEM_ERROR;
+	   	 		}
+                if (responseStatus.equals(Response.ASYNC_RESPONSE)) {
+                    return;
+                } else {
+                    sendResponseAndCountFailures.sendResponseBackToESME(responseStatus);
+                }
+	   	 	}
+	    }
+
+        private void properlyAdjustBindStatus(SMPPPacket packet, SMPPResponse response, Response responseStatus) {
 	   	 		// bind is a special request
 	   	 		if (packet.getCommandId() == SMPPPacket.BIND_RECEIVER
 	   	 				|| packet.getCommandId() == SMPPPacket.BIND_TRANSCEIVER
@@ -434,12 +470,8 @@ public class SmppSession {
 		   	 			
 	   	 			}
 	   	 		}
-	   	 			
-	   	 		// send the response
-	   	 		link.write(response, false);
-	   	 	}
-	    }
-    	
+        }
+
     }
 
 }

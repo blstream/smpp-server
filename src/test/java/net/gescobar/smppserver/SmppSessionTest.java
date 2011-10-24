@@ -2,12 +2,7 @@ package net.gescobar.smppserver;
 
 import ie.omk.smpp.BadCommandIDException;
 import ie.omk.smpp.Connection;
-import ie.omk.smpp.message.Bind;
-import ie.omk.smpp.message.BindResp;
-import ie.omk.smpp.message.BindTransceiver;
-import ie.omk.smpp.message.DeliverSM;
-import ie.omk.smpp.message.SMPPPacket;
-import ie.omk.smpp.message.SubmitSM;
+import ie.omk.smpp.message.*;
 import ie.omk.smpp.net.StreamLink;
 import ie.omk.smpp.util.PacketFactory;
 import ie.omk.smpp.util.SMPPIO;
@@ -31,6 +26,10 @@ import org.testng.annotations.Test;
 /**
  * 
  * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
  */
 public class SmppSessionTest {
 
@@ -113,7 +112,7 @@ public class SmppSessionTest {
 		smppSession.setPacketProcessor(new PacketProcessor() {
 
 			@Override
-			public Response processPacket(SMPPPacket packet) {
+			public Response processPacket(SMPPPacket packet, SMPPResponse response, SmppSession.SendResponseAction sendResponseBackAction) {
 				return Response.BIND_FAILED;
 			}
 			

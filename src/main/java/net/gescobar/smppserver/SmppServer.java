@@ -1,6 +1,7 @@
 package net.gescobar.smppserver;
 
 import ie.omk.smpp.message.SMPPPacket;
+import ie.omk.smpp.message.SMPPResponse;
 import ie.omk.smpp.util.DefaultSequenceScheme;
 import ie.omk.smpp.util.SequenceNumberScheme;
 
@@ -37,6 +38,10 @@ import org.slf4j.LoggerFactory;
  * specification) is used.</p>
  * 
  * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
  */
 public class SmppServer {
 	
@@ -106,7 +111,7 @@ public class SmppServer {
 		this(port, new PacketProcessor() {
 
 			@Override
-			public Response processPacket(SMPPPacket packet) {
+			public Response processPacket(SMPPPacket packet, SMPPResponse response, SmppSession.SendResponseAction sendResponseBackAction) {
 				return Response.OK;
 			}
 			
