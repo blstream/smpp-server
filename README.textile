@@ -1,6 +1,7 @@
 h1. SMPP Server
 
 A project based on the "smppapi":http://smppapi.sourceforge.net/ library that accepts client connections and allows you to easily handle SMPP packets.
+"Original version":https://github.com/germanescobar/smpp-server created by German Escobar was adapted to enable asynchronous processing of multiple messages concurrently by Przemysław Pokrywka.
 
 h2. Starting and stopping
 
@@ -16,13 +17,18 @@ server.stop();
 
 h2. Processing SMPP packets
 
-To process SMPP packets, you will need to provide an implementation of the @net.gescobar.smppserver.PacketProcessor@. For example:
+To process SMPP packets, you will need to provide an implementation of the @net.gescobar.smppserver.PacketProcessor@.
+By returning Response.ASYNC_RESPONSE you indicate, that you want to process the packet in some other time. Server will not send the response itself.
+Actual response will be sent only when you call sendResponseBackToESME on the SendResponseAction object passed as a parameter.
+Note, that you can modify response content (like when you want to set custom TLVs) by manipulating the SMPPResponse object, the second parameter.
 
 <pre><code>
 public class MyPacketProcessor implements PacketProcessor {
-			
-	@Override
-	public Response processPacket(SMPPPacket packet) {
+
+	private Timer timer = new Timer(true);
+
+	@Override		
+	public Response processPacket(SMPPPacket packet, final SMPPResponse response, final SendResponseAction sender) = {
 				
 		if (packet.getCommandId() == SMPPPacket.BIND_RECEIVER
 	   	 		|| packet.getCommandId() == SMPPPacket.BIND_TRANSCEIVER
@@ -31,15 +37,23 @@ public class MyPacketProcessor implements PacketProcessor {
 	   	 	// check the credentials and return the corresponding SMPP command status
 	   	 	return Response.OK;
 	   	 					
-	   	 } else if (packet.getCommandId() == SMPPPacket.SUBMIT_SM) {
-	   	 		
-	   	 	// a message has arrived, what do you want to do with it?
-	   	 			
-	   	 	return Response.INVALID_DEST_ADDRESS; // just an example
-	   	 		
-	   	 }
+	   	 } else {
+			TimerTask task = new TimerTask() {
+			
+				public void run() {
+					TLVTable tlvs = new TLVTable();
+					tlvs.set(Tag.MESSAGE_PAYLOAD, "hello response tlvs!".getBytes());
+					response.setTLVTable(tlvs);
+					sender.sendResponseBackToESME(Response.OK);
+				}
+			};
+			// send appropriate response, but only after some specified time
+			timer.schedule(task, 2000);
+			return Response.ASYNC_RESPONSE;
+		}
 	}
 }
+
 </code></pre> 
 
 To use your @PacketProcessor@ implementation, set it in the @SmppServer@ using the constructor or the setter method:
@@ -78,4 +92,4 @@ targetSession.sendRequest(ds);
 
 </code></pre>
 
-That's it! As you can see, it's a simple, yet powerful design that will allow you to accept SMPP client connections, process incoming SMPP packets and send requests to the clients.
+That's it! As you can see, you can accept SMPP client connections, process incoming SMPP packets in both synchronous and asynchronous modes and send requests to the clients.
