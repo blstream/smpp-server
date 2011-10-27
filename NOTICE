@@ -1,0 +1,8 @@
+Based on the smpp-server by German Escobar: https://github.com/germanescobar/smpp-server commit 08804c1c53aac0132300bbe78351e48758b6699f
+
+Note, that although in that version the original project didn't specify any licence, the work was aimed to be published under the terms of
+Apache 2.0 license by the original author, as stated in a private conversation at 2011-10-11.
+That is the reason of specifying the original author in the LICENSE file.
+
+The files changed relatively to the original contain appropriate notices according to the terms of the Apache 2.0 license.
+
