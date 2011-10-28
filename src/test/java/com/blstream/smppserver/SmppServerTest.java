@@ -1,4 +1,4 @@
-package net.gescobar.smppserver;
+package com.blstream.smppserver;
 
 import ie.omk.smpp.message.SMPPPacket;
 

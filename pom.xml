@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<groupId>net.gescobar</groupId>
+	<groupId>com.blstream</groupId>
 	<artifactId>smpp-server</artifactId>
 	
 	<name>SMPP Server</name>
 	<version>1.0.0-SNAPSHOT</version>
-	<description>A simple SMPP Server based on the smppapi library.</description>
+	<description>Asynchronous SMPP Server based on German Escobar's smpp-server and the smppapi library.</description>
 	
 	<dependencies>
 		<dependency>
@@ -37,8 +37,8 @@
 	</dependencies>
 	
 	<scm>
-		<connection>scm:git:git://github.com/germanescobar/smpp-server.git</connection>
-		<url>scm:git:git://github.com/germanescobar/smpp-server.git</url>
+		<connection>scm:git:git://github.com/blstream/smpp-server.git</connection>
+		<url>scm:git:git://github.com/blstream/smpp-server.git</url>
 	</scm>
 	
 	<build>
@@ -63,19 +63,17 @@
 	</build>
 	
 	<distributionManagement>  
- 		<!-- Publish the versioned releases here -->  
  		<repository>  
-  			<id>elibom</id>  
-  			<name>Elibom Nexus Repository</name>  
-  			<url>http://repository.elibom.net/nexus/content/repositories/releases</url>  
- 		</repository>  
+  			<id>blstream</id>
+  			<name>BLStream Nexus Repository</name>
+  			<url>http://repository.blstream.net/nexus/content/repositories/releases</url>
+ 		</repository>
   
- 		<!-- Publish the versioned releases here -->  
  		<snapshotRepository>  
-  			<id>elibom</id>  
-  			<name>Elibom Nexus Repository</name>  
-  			<url>http://repository.elibom.net/nexus/content/repositories/snapshots</url>  
- 		</snapshotRepository>  
+  			<id>blstream</id>
+  			<name>BLStream Nexus Repository</name>
+  			<url>http://repository.blstream.net/nexus/content/repositories/snapshots</url>
+ 		</snapshotRepository>
 	</distributionManagement>
 	
 </project>

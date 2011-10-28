@@ -1,4 +1,4 @@
-package net.gescobar.smppserver;
+package com.blstream.smppserver;
 
 import ie.omk.smpp.BadCommandIDException;
 import ie.omk.smpp.message.Bind;
@@ -15,15 +15,15 @@ import ie.omk.smpp.util.SequenceNumberScheme;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.gescobar.smppserver.PacketProcessor.Response;
-import net.gescobar.smppserver.util.PacketFactory;
+import com.blstream.smppserver.PacketProcessor.Response;
+import com.blstream.smppserver.util.PacketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * <p>Represents an SMPP session with an SMPP client. When it receives an SMPP packet, it calls the 
- * {@link PacketProcessor#processPacket(ie.omk.smpp.message.SMPPPacket, ie.omk.smpp.message.SMPPResponse, net.gescobar.smppserver.SmppSession.SendResponseAction)} and responds with the returned value.</p>
+ * {@link PacketProcessor#processPacket(ie.omk.smpp.message.SMPPPacket, ie.omk.smpp.message.SMPPResponse, com.blstream.smppserver.SmppSession.SendResponseAction)} and responds with the returned value.</p>
  * 
  * <p>You can also send SMPP packets to the client using the ... </p>
  * 

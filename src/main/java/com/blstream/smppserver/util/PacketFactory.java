@@ -1,4 +1,4 @@
-package net.gescobar.smppserver.util;
+package com.blstream.smppserver.util;
 
 import ie.omk.smpp.BadCommandIDException;
 import ie.omk.smpp.SMPPRuntimeException;
@@ -46,6 +46,13 @@ import org.slf4j.LoggerFactory;
 
 public class PacketFactory {
 
+/**
+ * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
+ */
 private static final Logger LOG = LoggerFactory.getLogger(PacketFactory.class);
     
     private final Map<Integer, Class<? extends SMPPPacket>> commands =

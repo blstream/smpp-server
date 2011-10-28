@@ -1,4 +1,4 @@
-package net.gescobar.smppserver;
+package com.blstream.smppserver;
 
 import ie.omk.smpp.message.SMPPPacket;
 import ie.omk.smpp.message.SMPPResponse;
@@ -12,7 +12,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import net.gescobar.smppserver.util.SocketLink;
+import com.blstream.smppserver.util.SocketLink;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

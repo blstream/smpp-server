@@ -5,7 +5,7 @@ A project based on the "smppapi":http://smppapi.sourceforge.net/ library that ac
 
 h2. Starting and stopping
 
-To start the server you need to instantiate the @net.gescobar.smppserver.SmppServer@ class and call the @start()@ method:
+To start the server you need to instantiate the @com.blstream.smppserver.SmppServer@ class and call the @start()@ method:
 
 <pre><code>
 SmppServer server = new SmppServer(4444); // 4444 is the port, change it as needed
@@ -17,7 +17,7 @@ server.stop();
 
 h2. Processing SMPP packets
 
-To process SMPP packets, you will need to provide an implementation of the @net.gescobar.smppserver.PacketProcessor@.
+To process SMPP packets, you will need to provide an implementation of the @com.blstream.smppserver.PacketProcessor@.
 By returning Response.ASYNC_RESPONSE you indicate, that you want to process the packet in some other time. Server will not send the response itself.
 Actual response will be sent only when you call sendResponseBackToESME on the SendResponseAction object passed as a parameter.
 Note, that you can modify response content (like when you want to set custom TLVs) by manipulating the SMPPResponse object, the second parameter.

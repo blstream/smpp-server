@@ -1,4 +1,4 @@
-package net.gescobar.smppserver;
+package com.blstream.smppserver;
 
 import ie.omk.smpp.BadCommandIDException;
 import ie.omk.smpp.Connection;
@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import net.gescobar.smppserver.PacketProcessor.Response;
-import net.gescobar.smppserver.SmppSession.BindType;
-import net.gescobar.smppserver.SmppSession.Status;
+import com.blstream.smppserver.PacketProcessor.Response;
+import com.blstream.smppserver.SmppSession.BindType;
+import com.blstream.smppserver.SmppSession.Status;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;

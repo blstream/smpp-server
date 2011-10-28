@@ -1,4 +1,4 @@
-package net.gescobar.smppserver;
+package com.blstream.smppserver;
 
 import ie.omk.smpp.message.SMPPPacket;
 import ie.omk.smpp.message.SMPPResponse;
@@ -16,7 +16,7 @@ import ie.omk.smpp.message.SMPPResponse;
 public interface PacketProcessor {
 	
 	/**
-	 * The possible values that can be returned in the {@link PacketProcessor#processPacket(ie.omk.smpp.message.SMPPPacket, ie.omk.smpp.message.SMPPResponse, net.gescobar.smppserver.SmppSession.SendResponseAction)} method.
+	 * The possible values that can be returned in the {@link PacketProcessor#processPacket(ie.omk.smpp.message.SMPPPacket, ie.omk.smpp.message.SMPPResponse, com.blstream.smppserver.SmppSession.SendResponseAction)} method.
 	 * Actually, they correspond to the values defined in the command status of the SMPP specification.
 	 * 
 	 * Additionally, this enum holds a messageId that can be set when returning a sumbit_sm response. If not set

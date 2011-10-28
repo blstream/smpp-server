@@ -1,10 +1,17 @@
-package net.gescobar.smppserver.util;
+package com.blstream.smppserver.util;
 
 import ie.omk.smpp.net.StreamLink;
 
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * @author German Escobar
+ * 
+ * THIS FILE HAS BEEN CHANGED IN RELATION TO THE ORIGINAL VERSION BY
+ * @author Przemyslaw Pokrywka
+ * 
+ */
 public class SocketLink extends StreamLink {
 	
 	private Socket socket;
