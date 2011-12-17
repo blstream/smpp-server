@@ -3,6 +3,10 @@ h1. SMPP Server
 A project based on the "smppapi":http://smppapi.sourceforge.net/ library that accepts client connections and allows you to easily handle SMPP packets.
 "Original version":https://github.com/germanescobar/smpp-server created by German Escobar was adapted to enable asynchronous processing of multiple messages concurrently by Przemysław Pokrywka.
 
+h2. Building
+
+You build it with Maven >= 2. Download the sources and build it by: mvn install
+
 h2. Starting and stopping
 
 To start the server you need to instantiate the @com.blstream.smppserver.SmppServer@ class and call the @start()@ method:
@@ -20,7 +24,6 @@ h2. Processing SMPP packets
 To process SMPP packets, you will need to provide an implementation of the @com.blstream.smppserver.PacketProcessor@.
 By returning Response.ASYNC_RESPONSE you indicate, that you want to process the packet in some other time. Server will not send the response itself.
 Actual response will be sent only when you call sendResponseBackToESME on the SendResponseAction object passed as a parameter.
-Note, that you can modify response content (like when you want to set custom TLVs) by manipulating the SMPPResponse object, the second parameter.
 
 <pre><code>
 public class MyPacketProcessor implements PacketProcessor {
@@ -28,7 +31,7 @@ public class MyPacketProcessor implements PacketProcessor {
 	private Timer timer = new Timer(true);
 
 	@Override		
-	public Response processPacket(SMPPPacket packet, final SMPPResponse response, final SendResponseAction sender) = {
+	public Response processPacket(SMPPPacket packet, final SMPPResponse response, final SendResponseAction sender) {
 				
 		if (packet.getCommandId() == SMPPPacket.BIND_RECEIVER
 	   	 		|| packet.getCommandId() == SMPPPacket.BIND_TRANSCEIVER
@@ -39,11 +42,8 @@ public class MyPacketProcessor implements PacketProcessor {
 	   	 					
 	   	 } else {
 			TimerTask task = new TimerTask() {
-			
+						
 				public void run() {
-					TLVTable tlvs = new TLVTable();
-					tlvs.set(Tag.MESSAGE_PAYLOAD, "hello response tlvs!".getBytes());
-					response.setTLVTable(tlvs);
 					sender.sendResponseBackToESME(Response.OK);
 				}
 			};
@@ -67,6 +67,22 @@ server.setPacketProcessor(new MyPacketProcessor());
 </code></pre>
 
 If you don't provide a @PacketProcessor@ implementation, the default one (that always returns @Response.OK@) will be used.
+
+h2. Using optional parameters (TLVs)
+
+You can set custom TLVs by manipulating the SMPPResponse object, a parameter of PacketProcessor.processPacket
+method.
+<pre><code>
+            TLVTable tlvs = new TLVTable();
+            tlvs.set(Tag.MESSAGE_PAYLOAD, "hello response tlvs!".getBytes());
+            response.setTLVTable(tlvs);
+</code></pre>
+If you want to receive optional parameters from clients, don't forget to set
+<pre><code>
+            table.set(Tag.SC_INTERFACE_VERSION, Integer.valueOf(0x34))
+</code></pre>
+in your bind response, otherwise clients conforming to SMPP 3.4 specification will have to assume,
+that your server doesn't handle them.
 
 h2. Sending SMPP requests to the client
 
